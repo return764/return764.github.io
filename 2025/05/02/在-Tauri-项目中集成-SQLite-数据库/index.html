@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="使用 tauri-plugin-sqlite 在 Tauri 项目中集成 SQLite 数据库随着 Tauri 框架的逐渐成熟，越来越多开发者开始使用它来开发跨平台桌面应用。本文将介绍如何使用 tauri-plugin-sqlite 在 Tauri 项目中集成 SQLite 数据库功能。  📦 插件简介tauri-plugin-sqlite 是一个基于官方 SQLite 插件魔改而来的 Taur">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件">
+<meta property="og:url" content="http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/index.html">
+<meta property="og:site_name" content="Tao Yu&#39;s Blog">
+<meta property="og:description" content="使用 tauri-plugin-sqlite 在 Tauri 项目中集成 SQLite 数据库随着 Tauri 框架的逐渐成熟，越来越多开发者开始使用它来开发跨平台桌面应用。本文将介绍如何使用 tauri-plugin-sqlite 在 Tauri 项目中集成 SQLite 数据库功能。  📦 插件简介tauri-plugin-sqlite 是一个基于官方 SQLite 插件魔改而来的 Taur">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-05-02T04:00:00.000Z">
+<meta property="article:modified_time" content="2025-05-02T12:48:02.688Z">
+<meta property="article:author" content="Tao Yu">
+<meta property="article:tag" content="Tauri">
+<meta property="article:tag" content="SQLite">
+<meta property="article:tag" content="Rust">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/return764">项目</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/&text=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/&title=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/&is_video=false&description=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件&body=Check out this article: http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/&title=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/&title=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/&title=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/&title=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/&name=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/&t=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-tauri-plugin-sqlite-%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">1.</span> <span class="toc-text">使用 tauri-plugin-sqlite 在 Tauri 项目中集成 SQLite 数据库</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%A6-%E6%8F%92%E4%BB%B6%E7%AE%80%E4%BB%8B"><span class="toc-number">1.1.</span> <span class="toc-text">📦 插件简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%9B%A0-%E5%AE%89%E8%A3%85%E6%AD%A5%E9%AA%A4"><span class="toc-number">1.2.</span> <span class="toc-text">🛠 安装步骤</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%EF%B8%8F%E2%83%A3-%E6%B7%BB%E5%8A%A0%E4%BE%9D%E8%B5%96"><span class="toc-number">1.2.1.</span> <span class="toc-text">1️⃣ 添加依赖</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%EF%B8%8F%E2%83%A3-%E5%88%9D%E5%A7%8B%E5%8C%96%E6%8F%92%E4%BB%B6"><span class="toc-number">1.2.2.</span> <span class="toc-text">2️⃣ 初始化插件</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%97-%E5%89%8D%E7%AB%AF%E8%B0%83%E7%94%A8%E7%A4%BA%E4%BE%8B"><span class="toc-number">1.3.</span> <span class="toc-text">🔗 前端调用示例</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E6%95%B0%E6%8D%AE"><span class="toc-number">1.3.1.</span> <span class="toc-text">插入数据</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E6%95%B0%E6%8D%AE"><span class="toc-number">1.3.2.</span> <span class="toc-text">查询数据</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%92%A1-%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-number">1.4.</span> <span class="toc-text">💡 注意事项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E6%80%BB%E7%BB%93"><span class="toc-number">1.5.</span> <span class="toc-text">✅ 总结</span></a></li></ol></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Tao Yu</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2025-05-02T04:00:00.000Z" class="dt-published" itemprop="datePublished">2025-05-02</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/Tauri/">Tauri</a> › <a class="category-link" href="/categories/Tauri/SQLite/">SQLite</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Rust/" rel="tag">Rust</a>, <a class="p-category" href="/tags/SQLite/" rel="tag">SQLite</a>, <a class="p-category" href="/tags/Tauri/" rel="tag">Tauri</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h2 id="使用-tauri-plugin-sqlite-在-Tauri-项目中集成-SQLite-数据库"><a href="#使用-tauri-plugin-sqlite-在-Tauri-项目中集成-SQLite-数据库" class="headerlink" title="使用 tauri-plugin-sqlite 在 Tauri 项目中集成 SQLite 数据库"></a>使用 tauri-plugin-sqlite 在 Tauri 项目中集成 SQLite 数据库</h2><p>随着 Tauri 框架的逐渐成熟，越来越多开发者开始使用它来开发跨平台桌面应用。<br>本文将介绍如何使用 <a target="_blank" rel="noopener" href="https://github.com/return764/tauri-plugin-sqlite">tauri-plugin-sqlite</a> 在 Tauri 项目中集成 SQLite 数据库功能。</p>
+<hr>
+<h3 id="📦-插件简介"><a href="#📦-插件简介" class="headerlink" title="📦 插件简介"></a>📦 插件简介</h3><p><code>tauri-plugin-sqlite</code> 是一个基于官方 SQLite 插件魔改而来的 Tauri 插件，支持：</p>
+<ul>
+<li>基于 SQLite 的轻量级数据库操作</li>
+<li>使用 Rust 实现的后端数据库访问</li>
+<li>与前端（如 Vue&#x2F;React&#x2F;Svelte）无缝通信</li>
+</ul>
+<p>该插件适用于想在 Tauri 桌面应用中引入本地数据库功能的场景，尤其是小型应用或离线数据存储。</p>
+<hr>
+<h3 id="🛠-安装步骤"><a href="#🛠-安装步骤" class="headerlink" title="🛠 安装步骤"></a>🛠 安装步骤</h3><p>以下是将 <code>tauri-plugin-sqlite</code> 集成到你的 Tauri 项目的步骤：</p>
+<h4 id="1️⃣-添加依赖"><a href="#1️⃣-添加依赖" class="headerlink" title="1️⃣ 添加依赖"></a>1️⃣ 添加依赖</h4><p>添加Rust依赖</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cargo add tauri-plugin-sqlite</span><br></pre></td></tr></table></figure>
+<p>添加前端依赖</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">npm install tauri-plugin-sqlite-api</span><br><span class="line"><span class="comment"># or</span></span><br><span class="line">yarn add tauri-plugin-sqlite-api</span><br></pre></td></tr></table></figure>
+
+<h4 id="2️⃣-初始化插件"><a href="#2️⃣-初始化插件" class="headerlink" title="2️⃣ 初始化插件"></a>2️⃣ 初始化插件</h4><p>在 <code>src-tauri/src/main.rs</code> 文件中注册插件：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    tauri::Builder::<span class="title function_ invoke__">default</span>()</span><br><span class="line">        .<span class="title function_ invoke__">plugin</span>(tauri_plugin_sqlite::Builder::<span class="title function_ invoke__">default</span>().<span class="title function_ invoke__">build</span>())</span><br><span class="line">        .<span class="title function_ invoke__">run</span>(tauri::generate_context!())</span><br><span class="line">        .<span class="title function_ invoke__">expect</span>(<span class="string">&quot;error while running tauri application&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> db = <span class="keyword">await</span> <span class="title class_">Database</span>.<span class="title function_">load</span>(&#123;</span><br><span class="line">    <span class="attr">db_url</span>: <span class="string">`sqlite:expample.db`</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="🔗-前端调用示例"><a href="#🔗-前端调用示例" class="headerlink" title="🔗 前端调用示例"></a>🔗 前端调用示例</h3><p>你可以通过 <code>tauri-plugin-sqlite-api</code> 的 <code>select</code> 和 <code>execute</code> 方法在前端访问 SQLite。</p>
+<h4 id="插入数据"><a href="#插入数据" class="headerlink" title="插入数据"></a>插入数据</h4><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> id = db.<span class="title function_">execute</span>(<span class="string">&#x27;INSERT INTO users (name) VALUES (?)&#x27;</span>, [<span class="string">&#x27;John&#x27;</span>])</span><br></pre></td></tr></table></figure>
+
+<h4 id="查询数据"><a href="#查询数据" class="headerlink" title="查询数据"></a>查询数据</h4><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="title class_">User</span> = &#123;</span><br><span class="line">    <span class="attr">id</span>: <span class="built_in">number</span></span><br><span class="line">    <span class="attr">name</span>: <span class="built_in">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> result = db.<span class="property">select</span>&lt;<span class="title class_">User</span>&gt;(<span class="string">&#x27;SELECT * FROM users WHERE name = ?&#x27;</span>, [<span class="string">&#x27;John&#x27;</span>])</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(result);</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💡-注意事项"><a href="#💡-注意事项" class="headerlink" title="💡 注意事项"></a>💡 注意事项</h3><ul>
+<li>使用 <code>sqlite:&lt;name&gt;.db</code> 格式指定数据库文件名</li>
+<li>插件提供了 <code>execute</code>、<code>select</code> 等方法，分别对应执行和查询 SQL 语句</li>
+<li>插件本身不提供 ORM，需手动编写 SQL 语句</li>
+</ul>
+<hr>
+<h3 id="✅-总结"><a href="#✅-总结" class="headerlink" title="✅ 总结"></a>✅ 总结</h3><p>本插件仅仅是官方的<code>tauri-plugin-sql</code>插件的sqlite的导出版，移除了对<code>Mysql</code>和<code>Postgres</code>的支持，同时添加了对sqlite的extension的支持，这是官方库无法做到的</p>
+<p><code>tauri-plugin-sqlite</code> 是一个轻量、易用的 Tauri 插件，适合在桌面应用中使用 SQLite 存储数据。如果你正打算构建一个本地存储驱动的桌面应用，不妨一试。</p>
+<blockquote>
+<p>GitHub 仓库地址：<a target="_blank" rel="noopener" href="https://github.com/return764/tauri-plugin-sqlite">https://github.com/return764/tauri-plugin-sqlite</a></p>
+</blockquote>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">首页</a></li>
+        
+          <li><a href="/about/">关于</a></li>
+        
+          <li><a href="/archives/">归档</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/return764">项目</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-tauri-plugin-sqlite-%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">1.</span> <span class="toc-text">使用 tauri-plugin-sqlite 在 Tauri 项目中集成 SQLite 数据库</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%A6-%E6%8F%92%E4%BB%B6%E7%AE%80%E4%BB%8B"><span class="toc-number">1.1.</span> <span class="toc-text">📦 插件简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%9B%A0-%E5%AE%89%E8%A3%85%E6%AD%A5%E9%AA%A4"><span class="toc-number">1.2.</span> <span class="toc-text">🛠 安装步骤</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%EF%B8%8F%E2%83%A3-%E6%B7%BB%E5%8A%A0%E4%BE%9D%E8%B5%96"><span class="toc-number">1.2.1.</span> <span class="toc-text">1️⃣ 添加依赖</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%EF%B8%8F%E2%83%A3-%E5%88%9D%E5%A7%8B%E5%8C%96%E6%8F%92%E4%BB%B6"><span class="toc-number">1.2.2.</span> <span class="toc-text">2️⃣ 初始化插件</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%97-%E5%89%8D%E7%AB%AF%E8%B0%83%E7%94%A8%E7%A4%BA%E4%BE%8B"><span class="toc-number">1.3.</span> <span class="toc-text">🔗 前端调用示例</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E6%95%B0%E6%8D%AE"><span class="toc-number">1.3.1.</span> <span class="toc-text">插入数据</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E6%95%B0%E6%8D%AE"><span class="toc-number">1.3.2.</span> <span class="toc-text">查询数据</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%92%A1-%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-number">1.4.</span> <span class="toc-text">💡 注意事项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E6%80%BB%E7%BB%93"><span class="toc-number">1.5.</span> <span class="toc-text">✅ 总结</span></a></li></ol></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/&text=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/&title=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/&is_video=false&description=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件&body=Check out this article: http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/&title=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/&title=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/&title=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/&title=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/&name=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://yoursite.com/2025/05/02/%E5%9C%A8-Tauri-%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90-SQLite-%E6%95%B0%E6%8D%AE%E5%BA%93/&t=在 Tauri 中集成 SQLite：使用 tauri-plugin-sqlite 插件"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2025
+    Tao Yu
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/return764">项目</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
